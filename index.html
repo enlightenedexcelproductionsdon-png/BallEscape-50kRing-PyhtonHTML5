@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>50,000 Rings Challenge</title>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        canvas { border: 2px solid #333; }
+    </style>
+</head>
+<body>
+    <canvas id="sim"></canvas>
+    <script>
+        const canvas = document.getElementById('sim');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 800;
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const ringCount = 50000;
+        const baseRadius = 350;
+        
+        let ball = { x: centerX, y: centerY, vx: 5, vy: 3, radius: 10 };
+
+        function draw() {
+            // Dark trail effect
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the "Rings" (Optimized as a visual boundary)
+            ctx.strokeStyle = '#0ff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, baseRadius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Ball Physics
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+
+            // Collision detection with the circular boundary
+            const dx = ball.x - centerX;
+            const dy = ball.y - centerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance + ball.radius > baseRadius) {
+                // Reflect velocity based on normal vector
+                const nx = dx / distance;
+                const ny = dy / distance;
+                const dot = ball.vx * nx + ball.vy * ny;
+                
+                ball.vx -= 2 * dot * nx;
+                ball.vy -= 2 * dot * ny;
+
+                // Push ball back inside to prevent getting stuck
+                ball.x = centerX + nx * (baseRadius - ball.radius);
+                ball.y = centerY + ny * (baseRadius - ball.radius);
+                
+                // Visual flare on hit
+                ctx.strokeStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, baseRadius + 5, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Draw Ball
+            ctx.fillStyle = '#ff0055';
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            requestAnimationFrame(draw);
+        }
+        draw();
+    </script>
+</body>
+</html>
+
